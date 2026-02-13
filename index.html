@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Task Timer Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;600&family=Share+Tech+Mono&family=Roboto:wght@300;400;700&family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: background 0.5s, color 0.5s;
+            flex-direction: column;
+            overflow: hidden; 
+            position: relative;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body.dark-mode {
+            background: linear-gradient(-45deg, #2c3e50, #4b4b4b, #34495e, #2c3e50);
+            color: #fff;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            transition: background-color 0.5s;
+            position: relative;
+            z-index: 10;
+        }
+        body.dark-mode .container { background-color: rgba(0, 0, 0, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); }
+        h2 { color: #333; margin-bottom: 20px; font-weight: 600; letter-spacing: 1px; }
+        body.dark-mode h2 { color: #fff; }
+        label { font-size: 16px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color: #444; display: block; text-align: left; }
+        body.dark-mode label { color: #ddd; }
+        input, select { margin: 10px 0; padding: 12px 15px; font-size: 16px; border-radius: 10px; border: 1px solid #ddd; width: calc(100% - 30px); outline: none; transition: 0.3s; }
+        input:focus { border-color: #23a6d5; box-shadow: 0 0 8px rgba(35, 166, 213, 0.3); }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 8px; background: rgba(0, 0, 0, 0.1); border-radius: 10px; outline: none; margin: 15px 0 20px 0; border: none; }
+        body.dark-mode input[type="range"] { background: rgba(255, 255, 255, 0.1); }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #e73c7e; cursor: pointer; border-radius: 50%; box-shadow: 0 0 10px rgba(231, 60, 126, 0.5); transition: transform 0.2s ease; }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+        select { width: 100%; cursor: pointer; }
+        body.dark-mode input, body.dark-mode button, body.dark-mode select { background-color: #333; color: #fff; border: 1px solid #555; }
+        button { background: linear-gradient(90deg, #4CAF50, #45a049); color: white; border: none; cursor: pointer; transition: all 0.3s ease; border-radius: 12px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3); position: relative; overflow: hidden; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4); }
+        #timer { font-family: 'Share Tech Mono', monospace; font-size: 64px; margin: 15px 0; font-weight: 400; color: #333; letter-spacing: 2px; text-shadow: 2px 2px 0px rgba(0,0,0,0.1); transition: color 0.3s; }
+        #timer.negative { color: #ff5252; text-shadow: 0 0 15px rgba(255, 82, 82, 0.6); }
+        body.dark-mode #timer { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .blink { animation: blink 0.8s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        #taskList { text-align: left; margin-top: 20px; padding-left: 20px; }
+        body.dark-mode #taskList li { color: #ddd; }
+        #summaryStats { margin-top: 20px; padding-top: 10px; border-top: 1px solid #ccc; text-align: left; }
+        .summary-line { font-size: 18px; font-weight: bold; color: #222; margin: 5px 0; }
+        body.dark-mode .summary-line { color: #fff; }
+        #darkModeToggle, #settingsToggle, #soundToggle, #backButton { position: absolute; top: 20px; font-size: 22px; cursor: pointer; color: #fff; z-index: 100; text-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.2s; }
+        #darkModeToggle { right: 20px; } #settingsToggle { right: 60px; } #soundToggle { right: 100px; } #backButton { left: 20px; }
+        .toggle-container { display: flex; align-items: center; justify-content: center; margin: 20px 0; }
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; margin-left: 10px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #23a6d5; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        #hoursInput, #secondsInput, #hoursSlider, #secondsSlider { display: none; }
+        #tapInstruction { font-size: 13px; font-style: italic; color: #888; margin: 15px 0; letter-spacing: 0.5px; }
+        body.dark-mode #tapInstruction { color: #bbb; }
+        #progressBarContainer { width: 100%; height: 8px; background-color: rgba(0,0,0,0.05); border-radius: 10px; margin: 15px 0; overflow: hidden; display: none; }
+        body.dark-mode #progressBarContainer { background-color: rgba(255,255,255,0.1); }
+        #progressBar { height: 100%; width: 100%; transition: width 0.1s linear; }
+        .progress-standard { background-color: #4CAF50; }
+        .progress-striped { background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); background-size: 1rem 1rem; background-color: #2196F3 !important; }
+        .progress-modern { background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); }
+        #taskProgressBarContainer { width: 90%; max-width: 460px; height: 20px; background-color: rgba(255, 255, 255, 0.25); border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); display: none; position: relative; backdrop-filter: blur(4px); }
+        #taskProgressBarContainer .label { position: absolute; width: 100%; text-align: center; line-height: 20px; font-size: 11px; color: #333; font-weight: 700; z-index: 5; text-transform: uppercase; letter-spacing: 1px; }
+        #taskProgressBar { height: 100%; width: 0%; background-color: #00bcd4; transition: width 0.3s ease-out; }
+        .task-standard { background-color: #00bcd4 !important; }
+        .task-stripe { background-color: #ff9800 !important; background-image: linear-gradient(-45deg, rgba(0, 0, 0, 0.2) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2) 75%, transparent 75%, transparent); background-size: 10px 10px; }
+        .task-pulse { background: linear-gradient(90deg, #9c27b0, #673ab7); box-shadow: 0 0 10px rgba(156, 39, 176, 0.5); animation: pulse-bg 1s infinite alternate; }
+        #nextTaskBtn { background: linear-gradient(45deg, #2196F3, #21CBF3); margin-top: 20px; font-weight: bold; display: none; width: 100%; padding: 15px; font-size: 18px; border-radius: 15px; box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4); }
+        #pauseResumeButton { width: 100%; padding: 14px; font-size: 18px; border-radius: 15px; background: linear-gradient(45deg, #FF9800, #F44336); box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3); margin-bottom: 20px; }
+        #undoButton { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 500; width: auto; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; animation: slideDown 0.3s ease-out; }
+        #liveStats { margin-top: 5px; padding: 15px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 16px; text-align: center; display: grid; grid-template-columns: 1fr 1fr; grid-gap: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); transition: all 0.5s ease; }
+        body.dark-mode #liveStats { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .live-stat-item:last-child { grid-column: span 2; margin-top: 5px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 8px; }
+        .live-stat-item { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .live-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 2px; font-weight: 600; }
+        .live-stat-value { font-size: 18px; font-weight: 700; color: #333; }
+        body.dark-mode .live-stat-value { color: #fff; }
+        .stat-negative { color: #ff5252; text-shadow: 0 0 8px rgba(255,82,82,0.5); }
+        .modal { position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; }
+        .modal-content { background-color: #fff; padding: 25px; border: none; width: 85%; max-width: 340px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
+        body.dark-mode .modal-content { background-color: #2a2a2a; color: #fff; }
+        .close-btn { color: #aaa; position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 18px 0; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 8px; }
+        .setting-nav-item { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; cursor: pointer; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 10px; }
+        .hidden { display: none !important; }
+        span.ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple-anim 0.6s linear; background-color: rgba(255, 255, 255, 0.5); pointer-events: none; z-index: 9999; }
+        @keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div id="backButton" onclick="goBackToStart()">⬅️</div>
+    <div id="soundToggle" onclick="toggleSound(event)">🔊</div>
+    <div id="settingsToggle" onclick="openSettings(event)">⚙️</div>
+    <div id="darkModeToggle" onclick="toggleDarkMode(event)">🌙</div>
+    <button id="undoButton" class="hidden" onclick="undoLastTask(event)">↩ Undo</button>
+    
+    <div class="container">
+        <div id="taskProgressBarContainer">
+            <div id="taskProgressBar" class="task-standard"></div>
+            <div class="label" id="taskProgressBarLabel">Task Progress: 0/0</div>
+        </div>
+
+        <div id="setup">
+            <h2>Configure Timer</h2>
+            <label for="taskCount">Number of tasks</label>
+            <input type="number" id="taskCount" placeholder="Enter tasks" min="1" required oninput="syncSlider('taskCount', 'taskCountSlider')">
+            <input type="range" id="taskCountSlider" class="range-slider hidden" min="1" max="100" value="1" oninput="syncSlider('taskCountSlider', 'taskCount')">
+            
+            <div class="toggle-container">
+                <label for="toggleHoursSeconds" style="font-size:14px; margin:0;">Expanded Time Options</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggleHoursSeconds" onclick="toggleExtraFields()">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            
+            <div id="hoursInput">
+                <label for="totalTimeHours">Total time (hours)</label>
+                <input type="number" id="totalTimeHours" placeholder="Hours" min="0" oninput="syncSlider('totalTimeHours', 'totalTimeHoursSlider')">
+                <input type="range" id="totalTimeHoursSlider" class="range-slider hidden" min="0" max="24" value="0" oninput="syncSlider('totalTimeHoursSlider', 'totalTimeHours')">
+            </div>
+            
+            <label for="totalTimeMinutes">Total time (minutes)</label>
+            <input type="number" id="totalTimeMinutes" placeholder="Minutes" min="1" required oninput="syncSlider('totalTimeMinutes', 'totalTimeMinutesSlider')">
+            <input type="range" id="totalTimeMinutesSlider" class="range-slider hidden" min="0" max="120" value="0" oninput="syncSlider('totalTimeMinutesSlider', 'totalTimeMinutes')">
+            
+            <div id="secondsInput">
+                <label for="totalTimeSeconds">Total time (seconds)</label>
+                <input type="number" id="totalTimeSeconds" placeholder="Seconds" min="0" max="59" oninput="syncSlider('totalTimeSeconds', 'totalTimeSecondsSlider')">
+                <input type="range" id="totalTimeSecondsSlider" class="range-slider hidden" min="0" max="59" value="0" oninput="syncSlider('totalTimeSecondsSlider', 'totalTimeSeconds')">
+            </div>
+            
+            <button onclick="startApplication()" style="margin-top: 20px; width: 100%; padding: 15px; font-size: 18px;">Start Session</button>
+        </div>
+        <div id="timerSection" class="hidden">
+            <h2 style="font-size: 18px; margin-bottom: 10px; opacity: 0.8;">Task <span id="currentTaskNumber"></span> / <span id="totalTaskNumber"></span></h2>
+            <div id="timer">00:00</div>
+            <div id="progressBarContainer"><div id="progressBar" class="progress-standard"></div></div>
+            <div id="tapInstruction">Tap anywhere to complete task</div>
+            <button id="pauseResumeButton" onclick="togglePauseResume(event)">Pause</button>
+            <div id="liveStats">
+                <div class="live-stat-item"><span class="live-stat-label">Task Time</span><span id="liveCurrentTaskTime" class="live-stat-value">00:00</span></div>
+                <div class="live-stat-item"><span class="live-stat-label">Elapsed</span><span id="liveTotalElapsedTime" class="live-stat-value">00:00</span></div>
+                <div class="live-stat-item"><span class="live-stat-label">Session Remaining</span><span id="liveSessionRemaining" class="live-stat-value">00:00</span></div>
+            </div>
+            <button id="nextTaskBtn" onclick="manualNextTask(event)">COMPLETE TASK</button>
+        </div>
+
+        <div id="results" class="hidden">
+            <h2>Session Complete</h2>
+            <div id="summaryStats"></div>
+            <ul id="taskList" style="max-height: 200px; overflow-y: auto;"></ul>
+            <button onclick="restartApplication()" style="margin-top: 15px;">Start New Session</button>
+        </div>
+    </div>
+    <div id="settingsModal" class="modal hidden" onclick="closeSettingsOnOutsideClick(event)">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeSettings()">&times;</span>
+            <div id="settingsMainView">
+                <h2 style="margin-top:0;">Settings</h2>
+                <div class="setting-item"><span class="setting-label-text">Enable Sliders</span><label class="toggle-switch"><input type="checkbox" id="sliderToggle" onchange="toggleSliders()"><span class="slider round"></span></label></div>
+                <div class="setting-item"><span class="setting-label-text">Keep Screen On</span><label class="toggle-switch"><input type="checkbox" id="screenLockToggle" onchange="toggleScreenLock()"><span class="slider round"></span></label></div>
+                <div class="setting-item"><span class="setting-label-text">Show Button Only</span><label class="toggle-switch"><input type="checkbox" id="tapToNextToggle" onchange="toggleTapMode()"><span class="slider round"></span></label></div>
+                <div class="setting-item"><span class="setting-label-text">Vibrate (Overtime)</span><label class="toggle-switch"><input type="checkbox" id="vibrateNegativeToggle" onchange="toggleVibrateNegative()"><span class="slider round"></span></label></div>
+                <div class="setting-item"><span class="setting-label-text">Vibrate (Next Task)</span><label class="toggle-switch"><input type="checkbox" id="vibrateNextTaskToggle" onchange="toggleVibrateNextTask()"><span class="slider round"></span></label></div>
+                <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                    <span class="setting-label-text">App Font Style</span>
+                    <select id="fontStyleSelect" onchange="changeFontStyle()">
+                        <option value="poppins" selected>Poppins (Default)</option>
+                        <option value="mono">Share Tech Mono</option>
+                        <option value="roboto">Roboto (Clean)</option>
+                        <option value="montserrat">Montserrat (Modern)</option>
+                        <option value="opensans">Open Sans (Readable)</option>
+                        <option value="orbitron">Orbitron (Sci-Fi)</option>
+                        <option value="arial">Arial Bold</option>
+                    </select>
+                </div>
+                <div class="setting-item" style="flex-direction: column; align-items: flex-start;"><span class="setting-label-text">Time Bar Style</span><select id="progressStyleSelect" onchange="changeProgressStyle()"><option value="standard">Standard</option><option value="striped">Striped</option><option value="modern" selected>Modern</option></select></div>
+                <div class="setting-item" style="flex-direction: column; align-items: flex-start;"><span class="setting-label-text">Task Bar Style</span><select id="taskProgressStyleSelect" onchange="changeTaskProgressStyle()"><option value="standard">Standard</option><option value="stripe" selected>Striped</option><option value="pulse">Pulse</option></select></div>
+                <div class="setting-item" style="flex-direction: column; align-items: flex-start;"><span class="setting-label-text">Sound Tone</span><select id="soundTypeSelect" onchange="changeSoundType()"><option value="beep">Beep</option><option value="soft">Soft</option></select></div>
+                <div class="setting-nav-item" onclick="showAboutView()"><span style="font-weight: bold; font-size: 16px;">About Developer</span><span>▶</span></div>
+            </div>
+            <div id="settingsAboutView" class="hidden"><div class="settings-back-btn" onclick="showMainSettingsView()" style="cursor:pointer; text-align:left; margin-bottom:15px; font-weight:bold;">⬅️ Back</div><h2>About</h2><p>This Application is developed by <strong>Kuldeep Sharma</strong></p></div>
+        </div>
+    </div>
+    <script>
+        let taskCount, totalTime, originalTotalTime, currentTask, timePerTask, timerInterval, globalInterval, isPaused = false, taskTimes;
+        let beepPlayed = false, negativeVibrated = false, audioCtx, isMuted = false, startTime, pauseStartTime, totalPausedTime, wakeLock = null;
+        let tapToNextEnabled = true, progressBarStyle = 'modern', soundType = 'beep', taskProgressStyle = 'stripe', vibrateOnNegative = true, vibrateOnNextTask = true;
+        let undoTimeout, previousTimePerTask = 0, lastTaskElapsed = 0, slidersEnabled = false;
+        let sessionStartTime = 0, sessionPausedTime = 0, accumulatedPreviousTasksTime = 0; 
+        let fontStyle = 'poppins';
+
+        window.onload = function() {
+            try {
+                if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+                if (localStorage.getItem('isMuted') === 'true') { isMuted = true; document.getElementById('soundToggle').textContent = '🔇'; }
+                if (localStorage.getItem('screenLock') === 'true') document.getElementById('screenLockToggle').checked = true;
+                slidersEnabled = localStorage.getItem('slidersEnabled') === 'true';
+                document.getElementById('sliderToggle').checked = slidersEnabled;
+                applySliderVisibility();
+                const storedVibNeg = localStorage.getItem('vibrateOnNegative'); if (storedVibNeg !== null) vibrateOnNegative = (storedVibNeg === 'true');
+                const storedVibNext = localStorage.getItem('vibrateOnNextTask'); if (storedVibNext !== null) vibrateOnNextTask = (storedVibNext === 'true');
+                const storedTap = localStorage.getItem('tapToNext'); if (storedTap !== null) tapToNextEnabled = (storedTap === 'true');
+                const storedProg = localStorage.getItem('progressStyle'); if (storedProg) progressBarStyle = storedProg;
+                const storedTask = localStorage.getItem('taskProgressStyle'); if (storedTask) taskProgressStyle = storedTask;
+                const storedSound = localStorage.getItem('soundType'); if (storedSound) soundType = storedSound;
+                const storedFont = localStorage.getItem('fontStyle'); if (storedFont) fontStyle = storedFont;
+            } catch (e) {}
+            syncUIToSettings(); toggleExtraFields(); updateTimerFont();
+        };
+        function syncSlider(sourceId, targetId) { document.getElementById(targetId).value = document.getElementById(sourceId).value; }
+        function startApplication() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const taskCountInput = document.getElementById('taskCount').value;
+            if(!taskCountInput) { alert('Please enter number of tasks.'); return; }
+            taskCount = parseInt(taskCountInput);
+            let h = parseInt(document.getElementById('totalTimeHours').value) || 0;
+            let m = parseInt(document.getElementById('totalTimeMinutes').value) || 0;
+            let s = parseInt(document.getElementById('totalTimeSeconds').value) || 0;
+            totalTime = (h * 3600) + (m * 60) + s;
+            originalTotalTime = totalTime;
+            if (totalTime <= 0) { alert('Time must be > 0.'); return; }
+            timePerTask = Math.floor(totalTime / taskCount);
+            currentTask = 1; taskTimes = new Array(taskCount).fill(0);
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('timerSection').classList.remove('hidden');
+            document.getElementById('totalTaskNumber').textContent = taskCount;
+            document.getElementById('progressBarContainer').style.display = 'block';
+            document.getElementById('taskProgressBarContainer').style.display = 'flex';
+            updateProgressBarStyle(); updateTaskProgressBarStyle(); updateTaskProgressBar(0, taskCount);
+            configureNavigationMode(); requestWakeLockIfEnabled(); 
+            sessionStartTime = Date.now(); sessionPausedTime = 0;
+            startGlobalSessionClock(); startTimer();
+        }
+        function startGlobalSessionClock() {
+            clearInterval(globalInterval);
+            globalInterval = setInterval(() => {
+                if (!isPaused) {
+                    let totalElapsed = Math.floor((Date.now() - sessionStartTime - sessionPausedTime) / 1000);
+                    let sessionRem = originalTotalTime - totalElapsed;
+                    document.getElementById('liveTotalElapsedTime').textContent = formatLiveTime(totalElapsed);
+                    let remElem = document.getElementById('liveSessionRemaining');
+                    remElem.textContent = formatLiveTime(sessionRem);
+                    if (sessionRem < 0) remElem.classList.add('stat-negative'); else remElem.classList.remove('stat-negative');
+                }
+            }, 100);
+        }
+        function formatLiveTime(s) {
+            let absS = Math.abs(s), hours = Math.floor(absS / 3600), mins = Math.floor((absS % 3600) / 60), secs = absS % 60, sign = s < 0 ? '-' : '';
+            return sign + (hours > 0 ? String(hours).padStart(2, '0') + ':' : '') + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
+        function startTimer(elapsedOffset = 0) {
+            if(vibrateOnNextTask && elapsedOffset === 0) navigator.vibrate(100);
+            document.getElementById('currentTaskNumber').textContent = currentTask;
+            startTime = Date.now() - (elapsedOffset * 1000);
+            pauseStartTime = 0; totalPausedTime = 0; isPaused = false; beepPlayed = false; negativeVibrated = false;
+            document.getElementById('pauseResumeButton').textContent = 'Pause';
+            document.getElementById('timer').classList.remove('blink');
+            updateTaskProgressBar(currentTask - 1, taskCount);
+            updateTimerDisplay(timePerTask - elapsedOffset);
+            document.getElementById('liveCurrentTaskTime').textContent = formatLiveTime(elapsedOffset);
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    let elapsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+                    let timeLeft = timePerTask - elapsedSeconds;
+                    updateTimerDisplay(timeLeft);
+                    document.getElementById('liveCurrentTaskTime').textContent = formatLiveTime(elapsedSeconds);
+                    if (timeLeft <= 0 && !beepPlayed) { playBeep(); document.getElementById('timer').classList.add('blink'); beepPlayed = true; }
+                    if (timeLeft <= 0 && vibrateOnNegative && !negativeVibrated) { navigator.vibrate([400, 200, 400]); negativeVibrated = true; }
+                }
+            }, 100);
+            setTimeout(() => { configureClickListeners(); }, 100);
+        }
+        function updateTimerDisplay(time) {
+            let m = Math.floor(Math.abs(time) / 60), s = Math.abs(time) % 60, sign = time < 0 ? '-' : '';
+            document.getElementById('timer').textContent = `${sign}${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            if (time < 0) { document.getElementById('timer').classList.add('negative'); document.getElementById('progressBar').style.width = "100%"; document.getElementById('progressBar').style.backgroundColor = "red"; }
+            else { document.getElementById('timer').classList.remove('negative'); document.getElementById('progressBar').style.width = ((time / timePerTask) * 100) + "%"; document.getElementById('progressBar').style.backgroundColor = ""; }
+        }
+        function completeTask() {
+            if (isPaused) { totalPausedTime += Date.now() - pauseStartTime; sessionPausedTime += Date.now() - pauseStartTime; isPaused = false; }
+            if (currentTask <= taskCount) {
+                clearInterval(timerInterval);
+                previousTimePerTask = timePerTask;
+                let taskTime = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+                lastTaskElapsed = taskTime; taskTimes[currentTask - 1] = taskTime;
+                totalTime -= taskTime; currentTask++;
+                document.getElementById('timer').classList.remove('blink'); showUndoButton();
+                if (currentTask <= taskCount) { timePerTask = Math.floor(totalTime / (taskCount - currentTask + 1)); startTimer(); }
+                else { clearInterval(globalInterval); updateTaskProgressBar(taskCount, taskCount); if(vibrateOnNextTask) navigator.vibrate(600); showResults(); }
+            }
+        }
+        function undoLastTask(event) {
+            if(event) event.stopPropagation(); document.getElementById('undoButton').classList.add('hidden');
+            if (currentTask > taskCount) { document.getElementById('results').classList.add('hidden'); document.getElementById('timerSection').classList.remove('hidden'); requestWakeLockIfEnabled(); startGlobalSessionClock(); }
+            currentTask--; totalTime += lastTaskElapsed; timePerTask = previousTimePerTask; startTimer(lastTaskElapsed);
+        }
+        function showResults() { releaseWakeLock(); document.getElementById('timerSection').classList.add('hidden'); document.getElementById('results').classList.remove('hidden'); let taskList = document.getElementById('taskList'); taskList.innerHTML = ''; const fmt = (s) => `${Math.floor(s/3600)>0?Math.floor(s/3600)+'h ':''}${Math.floor((s%3600)/60)}m ${s%60}s`; let totalTaken = taskTimes.reduce((a,b)=>a+b, 0); taskTimes.forEach((t, i) => { let li = document.createElement('li'); li.textContent = `Task ${i+1}: ${fmt(t)}`; taskList.appendChild(li); }); let diff = originalTotalTime - totalTaken; document.getElementById('summaryStats').innerHTML = `<div class="summary-line">Total Given: ${fmt(originalTotalTime)}</div><div class="summary-line">Total Taken: ${fmt(totalTaken)}</div><div class="summary-line" style="color: ${diff>=0?'green':'red'}">${diff>=0?'Saved':'Excess'}: ${fmt(Math.abs(diff))}</div>`; }
+        function toggleSliders() { slidersEnabled = document.getElementById('sliderToggle').checked; localStorage.setItem('slidersEnabled', slidersEnabled); applySliderVisibility(); }
+        function applySliderVisibility() { const sliders = document.querySelectorAll('.range-slider'); sliders.forEach(s => { if(slidersEnabled) s.classList.remove('hidden'); else s.classList.add('hidden'); }); }
+        function syncUIToSettings() { document.getElementById('tapToNextToggle').checked = !tapToNextEnabled; document.getElementById('progressStyleSelect').value = progressBarStyle; document.getElementById('taskProgressStyleSelect').value = taskProgressStyle; document.getElementById('soundTypeSelect').value = soundType; document.getElementById('vibrateNegativeToggle').checked = vibrateOnNegative; document.getElementById('vibrateNextTaskToggle').checked = vibrateOnNextTask; document.getElementById('fontStyleSelect').value = fontStyle; }
+        function showUndoButton() { const btn = document.getElementById('undoButton'); btn.classList.remove('hidden'); if (undoTimeout) clearTimeout(undoTimeout); undoTimeout = setTimeout(() => btn.classList.add('hidden'), 5000); }
+        function togglePauseResume(event) { if(event) event.stopPropagation(); isPaused = !isPaused; if (isPaused) pauseStartTime = Date.now(); else { let diff = Date.now() - pauseStartTime; totalPausedTime += diff; sessionPausedTime += diff; } document.getElementById('pauseResumeButton').textContent = isPaused ? 'Resume' : 'Pause'; }
+        function manualNextTask(event) { if(event) event.stopPropagation(); completeTask(); }
+        function restartApplication() { location.reload(); }
+        function toggleSound(event) { event.stopPropagation(); isMuted = !isMuted; document.getElementById('soundToggle').textContent = isMuted ? '🔇' : '🔊'; localStorage.setItem('isMuted', isMuted); }
+        function playBeep() { if (isMuted) return; let osc = audioCtx.createOscillator(), g = audioCtx.createGain(); if (soundType === 'soft') { osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5); } else { osc.type = 'square'; osc.frequency.setValueAtTime(1000, audioCtx.currentTime); } osc.connect(g); g.connect(audioCtx.destination); osc.start(); setTimeout(() => osc.stop(), soundType === 'soft' ? 500 : 100); }
+        function toggleDarkMode(event) { event.stopPropagation(); document.body.classList.toggle('dark-mode'); localStorage.setItem('darkMode', document.body.classList.contains('dark-mode')); }
+        function goBackToStart() { restartApplication(); }
+        function toggleExtraFields() { const c = document.getElementById('toggleHoursSeconds').checked; document.getElementById('hoursInput').style.display = c ? 'block' : 'none'; document.getElementById('secondsInput').style.display = c ? 'block' : 'none'; applySliderVisibility(); }
+        function openSettings(event) { if(event) event.stopPropagation(); syncUIToSettings(); document.getElementById('settingsModal').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+        function closeSettingsOnOutsideClick(e) { if (e.target.id === 'settingsModal') closeSettings(); }
+        function showAboutView() { document.getElementById('settingsMainView').classList.add('hidden'); document.getElementById('settingsAboutView').classList.remove('hidden'); }
+        function showMainSettingsView() { document.getElementById('settingsAboutView').classList.add('hidden'); document.getElementById('settingsMainView').classList.remove('hidden'); }
+        function updateTaskProgressBar(c, t) { document.getElementById('taskProgressBar').style.width = ((c/t)*100) + "%"; document.getElementById('taskProgressBarLabel').textContent = `Task Progress: ${c}/${t}`; }
+        function changeTaskProgressStyle() { taskProgressStyle = document.getElementById('taskProgressStyleSelect').value; localStorage.setItem('taskProgressStyle', taskProgressStyle); updateTaskProgressBarStyle(); }
+        function updateTaskProgressBarStyle() { const b = document.getElementById('taskProgressBar'); b.className = ''; b.classList.add(`task-${taskProgressStyle}`); }
+        function changeProgressStyle() { progressBarStyle = document.getElementById('progressStyleSelect').value; localStorage.setItem('progressStyle', progressBarStyle); updateProgressBarStyle(); }
+        function updateProgressBarStyle() { const b = document.getElementById('progressBar'); b.className = ''; b.classList.add(`progress-${progressBarStyle}`); }
+        function toggleTapMode() { tapToNextEnabled = !document.getElementById('tapToNextToggle').checked; localStorage.setItem('tapToNext', tapToNextEnabled); configureNavigationMode(); configureClickListeners(); }
+        function toggleVibrateNegative() { vibrateOnNegative = document.getElementById('vibrateNegativeToggle').checked; localStorage.setItem('vibrateOnNegative', vibrateOnNegative); }
+        function toggleVibrateNextTask() { vibrateOnNextTask = document.getElementById('vibrateNextTaskToggle').checked; localStorage.setItem('vibrateOnNextTask', vibrateOnNextTask); }
+        function configureNavigationMode() { document.getElementById('tapInstruction').style.display = tapToNextEnabled ? 'block' : 'none'; document.getElementById('nextTaskBtn').style.display = tapToNextEnabled ? 'none' : 'block'; }
+        function configureClickListeners() { document.body.onclick = (e) => { if(tapToNextEnabled && !document.getElementById('timerSection').classList.contains('hidden') && e.target.tagName !== 'BUTTON' && !e.target.closest('.modal-content') && e.target.id !== 'darkModeToggle' && e.target.id !== 'soundToggle' && e.target.id !== 'settingsToggle' && e.target.id !== 'backButton') completeTask(); }; }
+        function changeSoundType() { soundType = document.getElementById('soundTypeSelect').value; localStorage.setItem('soundType', soundType); }
+        async function requestWakeLockIfEnabled() { if (document.getElementById('screenLockToggle').checked && 'wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} } }
+        function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
+        function toggleScreenLock() { const e = document.getElementById('screenLockToggle').checked; localStorage.setItem('screenLock', e); e ? requestWakeLockIfEnabled() : releaseWakeLock(); }
+        function changeFontStyle() { fontStyle = document.getElementById('fontStyleSelect').value; localStorage.setItem('fontStyle', fontStyle); updateTimerFont(); }
+        
+        function updateTimerFont() {
+            const body = document.body;
+            const timer = document.getElementById('timer');
+            const liveStatValues = document.querySelectorAll('.live-stat-value');
+            const fontMap = { 'poppins': "'Poppins', sans-serif", 'mono': "'Share Tech Mono', monospace", 'roboto': "'Roboto', sans-serif", 'montserrat': "'Montserrat', sans-serif", 'opensans': "'Open Sans', sans-serif", 'orbitron': "'Orbitron', sans-serif", 'arial': "'Arial', sans-serif" };
+            const selectedFont = fontMap[fontStyle] || fontMap['poppins'];
+            body.style.fontFamily = selectedFont;
+            const applyTimeToAll = (family, weight) => { timer.style.fontFamily = family; timer.style.fontWeight = weight; liveStatValues.forEach(el => { el.style.fontFamily = family; el.style.fontWeight = weight; }); };
+            if (fontStyle === 'mono') { applyTimeToAll(fontMap['mono'], "400"); } else if (fontStyle === 'arial') { applyTimeToAll(fontMap['arial'], "900"); } else if (fontStyle === 'orbitron') { applyTimeToAll(fontMap['orbitron'], "700"); } else { applyTimeToAll(selectedFont, "600"); }
+        }
+
+        document.addEventListener('click', function(e) {
+            const circle = document.createElement('span');
+            circle.classList.add('ripple');
+            const diameter = 100; const radius = diameter / 2;
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${e.clientX - radius}px`;
+            circle.style.top = `${e.clientY - radius}px`;
+            document.body.appendChild(circle);
+            setTimeout(() => { circle.remove(); }, 600);
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        (function() {
+            const originalShowResults = window.showResults;
+            window.showResults = function() {
+                if (originalShowResults) originalShowResults.apply(this, arguments);
+                if (typeof confetti === 'function') {
+                    const duration = 4 * 1000;
+                    const animationEnd = Date.now() + duration;
+                    const colors = ['#ee7752', '#e73c7e', '#23a6d5', '#23d5ab'];
+                    const interval = setInterval(function() {
+                        const timeLeft = animationEnd - Date.now();
+                        if (timeLeft <= 0) return clearInterval(interval);
+                        const particleCount = 40 * (timeLeft / duration);
+                        confetti({ particleCount, angle: 60, spread: 55, origin: { x: 0, y: 0.8 }, colors: colors, zIndex: 1000 });
+                        confetti({ particleCount, angle: 120, spread: 55, origin: { x: 1, y: 0.8 }, colors: colors, zIndex: 1000 });
+                    }, 250);
+                }
+            };
+        })();
+    </script>
+</body>
+</html>
